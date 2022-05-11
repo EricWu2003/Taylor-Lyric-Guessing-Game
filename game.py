@@ -1,11 +1,18 @@
 import os, json, random
 from os.path import join
+from os import path
+
+import sys
+if getattr(sys, 'frozen', False) and hasattr(sys, '_MEIPASS'):
+    print('running in a PyInstaller bundle')
+else:
+    print('running in a normal Python process')
 
 comp_lyrics_dir = "lyrics-compiled"
 lyrics_dir = "lyrics"
 
 word_freq_dir = "main.py"
-working_dir = os.getcwd()
+working_dir = path.dirname(__file__)
 print(f"Working directory: {working_dir}")
 
 MAX_WORD_FREQ = 8 # the progam will choose to use words appearing in at most this many songs.
