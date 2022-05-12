@@ -71,7 +71,7 @@ with open(join(comp_lyrics_dir, "word-frequencies.json")) as f:
 	word_freq = json.loads(f.read())
 with open(join(comp_lyrics_dir, "lyrics.json")) as f:
 	song_word_list = json.loads(f.read())
-	song_word_list = {k: sorted(v, key = lambda v: word_freq[v]) for k,v in song_word_list.items()}
+	song_word_list = {k: sorted(v, key = lambda v: word_freq[v[0].lower()]) for k,v in song_word_list.items()}
 with open(join(comp_lyrics_dir, "raw-lyric-dirs.json")) as f:
 	song_dir_list = json.loads(f.read())
 
@@ -92,7 +92,7 @@ while True:
 		print("---")
 		song_to_guess = random.choice(list(song_dir_list.keys()))
 		# candidate_words = [word.lower() for word in song_word_list[song_to_guess] if word_freq[word.lower()] <= MAX_WORD_FREQ]
-		candidate_words = song_word_list[song_to_guess][:N_WORD_CANDIDATE]
+		candidate_words = [i[0] for i in song_word_list[song_to_guess][:N_WORD_CANDIDATE]]
 		words_shown = random.sample(candidate_words, N_WORDS_START)
 		for word in words_shown:
 			candidate_words.remove(word)
