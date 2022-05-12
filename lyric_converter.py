@@ -1,11 +1,13 @@
 import json
 import os
 from os.path import join
+from os import path
+import nltk
 import unicodedata
 
-raw_lyric_dir = "lyric-guessing-game/lyrics"
-comp_lyric_dir = "lyric-guessing-game/lyrics-compiled"
-working_dir = "/Users/ericwu/Desktop/song-player"
+raw_lyric_dir = "lyrics"
+comp_lyric_dir = "lyrics-compiled"
+working_dir = path.dirname(__file__)
 
 
 NON_ASCII = []
@@ -62,8 +64,7 @@ def read_file(FILE_IN):
 				filteredLine += char
 			words += list(filteredLine.split())
 			
-	
-	return list(set(words)) #remove duplicates
+	return nltk.pos_tag(words)
 
 os.chdir(working_dir)
 os.chdir(raw_lyric_dir)
@@ -86,10 +87,10 @@ for album in album_titles:
 		song_dirs[f"{album_formatted}--{name}"] = os.path.join(raw_lyric_dir, album, path)
 os.chdir(working_dir)
 os.chdir(comp_lyric_dir)
-for d in all_lyrics.keys():
-	all_lyrics[d] = [w.lower() for w in all_lyrics[d]]
+# for d in all_lyrics.keys():
+# 	all_lyrics[d] = [w.lower() for w in all_lyrics[d]]
 # with open("lyrics.json", "w") as f:
-# 	f.write(json.dumps(all_lyrics))
+# 	f.write(json.dumps(all_lyrics , indent = 2))
 # with open("raw-lyric-dirs.json", "w") as f:
 # 	f.write(json.dumps(song_dirs))
 
