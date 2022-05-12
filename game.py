@@ -14,6 +14,7 @@ lyrics_dir = "lyrics"
 word_freq_dir = "main.py"
 working_dir = path.dirname(__file__)
 print(f"Working directory: {working_dir}")
+print("---")
 
 MAX_WORD_FREQ = 8 # the progam will choose to use words appearing in at most this many songs.
 N_WORDS_START = 3 # the program will show these many words to start.
@@ -49,7 +50,7 @@ def show_song(song, wordlist, showOnlyColoredLines = False):
 				if char in {'"', "'", "(", ")", ",", ".", "?", "!"}:
 					continue
 				filtered_word += char
-			if filtered_word.lower() in wordlist:
+			if filtered_word.lower() in [w.lower() for w in wordlist]:
 				in_color[index] = True
 
 		line = ""
@@ -65,6 +66,17 @@ def show_song(song, wordlist, showOnlyColoredLines = False):
 			lyrics_with_color += line + '\n'
 	print(lyrics_with_color)
 
+def print_help():
+	print("""Here is a list of all the commands:
+
+	s: Show the song from which the words were selected. This action is chosen by default if you enter a blank command.
+	show: Show the entire lyrics of the song from which the words were selected.
+	n: Progress to the next song.
+	a: Reveal another word from the song.
+	help: Show this list
+	exit: quit the game.
+""")
+
 
 os.chdir(working_dir)
 with open(join(comp_lyrics_dir, "word-frequencies.json")) as f:
@@ -75,7 +87,7 @@ with open(join(comp_lyrics_dir, "lyrics.json")) as f:
 with open(join(comp_lyrics_dir, "raw-lyric-dirs.json")) as f:
 	song_dir_list = json.loads(f.read())
 
-
+print_help()
 action =  "n"
 while True:
 	if action == "exit":
@@ -85,11 +97,7 @@ while True:
 	elif action == "show":
 		show_song(song_to_guess, words_shown)
 		print(f"The answer was: \033[1;34m{format_song_title(song_to_guess)}\033[1;00m")
-	elif action == "show -l":
-		show_song(song_to_guess, words_shown, True)
-		print(f"The answer was: \033[1;34m{format_song_title(song_to_guess)}\033[1;00m")
 	elif action == "n":
-		print("---")
 		song_to_guess = random.choice(list(song_dir_list.keys()))
 		# candidate_words = [word.lower() for word in song_word_list[song_to_guess] if word_freq[word.lower()] <= MAX_WORD_FREQ]
 		candidate_words = [i[0] for i in song_word_list[song_to_guess][:N_WORD_CANDIDATE]]
@@ -97,7 +105,7 @@ while True:
 		for word in words_shown:
 			candidate_words.remove(word)
 		print(f"Words in the song: \033[1;32m{'/'.join(words_shown)}\033[1;00m")
-	elif action == "a" or action == "add":
+	elif action == "a":
 		# add a new word and then display the word list
 		if len(candidate_words) > 0:
 			words_shown.append(random.choice(candidate_words))
@@ -105,7 +113,11 @@ while True:
 		else:
 			print("Sorry, there are no more candidate words! ")
 		print(f"Words in the song: \033[1;32m{'/'.join(words_shown)}\033[1;00m")
-	action = input("[s (default), show, n, exit, add] ")
+	elif action == "help":
+		print_help()
+	else:
+		print("Sorry, that did not match any of my known commands")
+	action = input("--->>> ")
 
 print('Bye!')
 
