@@ -38,6 +38,7 @@ def normalize(FILE_IN):
 
 def read_file(FILE_IN):
 	words = []
+	end_positions = []
 	with open(FILE_IN, 'r') as f:
 		for currLine, line in enumerate(f.readlines()):
 			currLine += 1
@@ -63,8 +64,12 @@ def read_file(FILE_IN):
 					continue
 				filteredLine += char
 			words += list(filteredLine.split())
+			end_positions.append(len(words))
 			
-	return nltk.pos_tag(words)
+	# this function returns a list of words indices at the end of each line, and also returns two strings: one for the song's words
+	# and another for the song's words' tags.
+	tagged = nltk.pos_tag(words)
+	return {"end_positions" : end_positions, "words": " ".join([x[0] for x in tagged]), "tags": " ".join([x[1] for x in tagged])}
 
 os.chdir(working_dir)
 os.chdir(raw_lyric_dir)
@@ -89,8 +94,8 @@ os.chdir(working_dir)
 os.chdir(comp_lyric_dir)
 # for d in all_lyrics.keys():
 # 	all_lyrics[d] = [w.lower() for w in all_lyrics[d]]
-# with open("lyrics.json", "w") as f:
-# 	f.write(json.dumps(all_lyrics , indent = 2))
+with open("lyrics.json", "w") as f:
+	f.write(json.dumps(all_lyrics , indent = 2))
 # with open("raw-lyric-dirs.json", "w") as f:
 # 	f.write(json.dumps(song_dirs))
 

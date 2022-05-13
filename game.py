@@ -62,15 +62,16 @@ def print_help():
 
 def find_tag_pattern_within_song (tag_pattern, song):
 	# tag pattern is a list of tags (strings)
-	# song is a list of tuples, each of which is a tagged word
+	# song is an value of one entry of song_word_list
 	patterns = []
-	for i in range(0, len(song) - len(tag_pattern)):
+	for i in range(0, len(song['tags']) - len(tag_pattern)):
+		print(i)
 		is_match = True
 		for j in range(len(tag_pattern)):
-			if tag_pattern[j] != song[i+j][1]:
+			if tag_pattern[j] != song['tags'][i+j]:
 				is_match = False
 		if is_match:
-			patterns.append(song[i: i+len(tag_pattern)])
+			patterns.append(song['words'][i: i+len(tag_pattern)])
 
 	return patterns
 
@@ -103,6 +104,9 @@ with open(join(comp_lyrics_dir, "word-frequencies.json")) as f:
 	word_freq = json.loads(f.read())
 with open(join(comp_lyrics_dir, "lyrics.json")) as f:
 	song_word_list = json.loads(f.read())
+for key, value in song_word_list.items():
+	song_word_list[key]['words'] = song_word_list[key]['words'].split(' ')
+	song_word_list[key]['tags'] = song_word_list[key]['tags'].split(' ')
 with open(join(comp_lyrics_dir, "raw-lyric-dirs.json")) as f:
 	song_dir_list = json.loads(f.read())
 
@@ -118,7 +122,7 @@ while True:
 		print(f"The answer was: \033[1;34m{format_song_title(song_to_guess)}\033[1;00m")
 	elif action == "n":
 		song_to_guess = random.choice(list(song_dir_list.keys()))
-		candidate_words = [i[0] for i in song_word_list[song_to_guess][:N_WORD_CANDIDATE]]
+		candidate_words = song_word_list[song_to_guess]['words'][:N_WORD_CANDIDATE]
 		words_shown = random.sample(candidate_words, N_WORDS_START)
 		for word in words_shown:
 			candidate_words.remove(word)
