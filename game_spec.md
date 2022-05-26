@@ -15,7 +15,7 @@ Where `havin adventures on your own` is the user input. After the user types in 
 
 And in this case the 'g' on the second line will be highlighted red to indicate that there is a difference between the user's guess and the correct answer. This should work similarly to how vsCode compares lines of code, but should not be case sensitive.
 
-If the user types extra words (if the correct answer's line ends prematurely), the user should not be penalized and should still earn a full score. Case insensitive. Let `d` be the distance between the user's guess and the correct answer.
+If the user types extra words (if the correct answer's line ends prematurely), the user should not be penalized and should still earn a full score. Case insensitive. Let `d` be the (case insensitive) levenshtein distance between the user's guess and the correct answer.
 
 The user should be awarded a certain number of points based on how many characters the guess differs from the correct answer. The number of points is simply `(15 - d)`. If `d > 15`, the user should see:
 
