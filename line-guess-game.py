@@ -3,9 +3,9 @@ from os.path import join
 import json
 import sys
 import random
-from Levenshtein import distance as levenshtein_distance
+import Levenshtein
 import difflib
-
+levenshtein_distance = Levenshtein.distance
 
 if getattr(sys, 'frozen', False) and hasattr(sys, '_MEIPASS'):
     print('running in a PyInstaller bundle')
