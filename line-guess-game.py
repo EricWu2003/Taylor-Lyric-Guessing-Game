@@ -98,8 +98,6 @@ def lev_dist_case_i(str1, str2):
 def optimalTruncatedDist(l1, l2):
     # first we will see how many characters we can truncate from the end of the guess to minimize lev_dist_case_i(userGuess, answer)
 
-    # A positive optimalK means that we truncate the user's guess (l1) to get the minimal distance
-    # A negative optimalK means that we truncate the answer (l2) to get the minimal distance
     optimalK = 0
     minimalDist = lev_dist_case_i(l1, l2)
     k = 1
@@ -107,13 +105,6 @@ def optimalTruncatedDist(l1, l2):
         d = lev_dist_case_i(l1[:-k], l2)
         if d < minimalDist:
             optimalK = k
-            minimalDist = d
-        k += 1
-    k = 1
-    while len(l2) - k >= 0:
-        d = lev_dist_case_i(l1, l2[:-k])
-        if d < minimalDist:
-            optimalK = -k
             minimalDist = d
         k += 1
     
