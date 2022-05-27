@@ -2,6 +2,7 @@ from math import trunc
 import os
 from os.path import join
 import json
+from re import A
 import sys
 import random
 from Levenshtein import distance as levenshtein_distance
@@ -13,6 +14,11 @@ if getattr(sys, 'frozen', False) and hasattr(sys, '_MEIPASS'):
 else:
     print('running in a normal Python process')
 
+def printIntroduction():
+    print("TODO: write intro here")
+
+MAX_ACCEPTABLE_DIST = 13
+POINTS_FOR_PERFECT_MATCH = 26
 
 working_dir = os.path.dirname(__file__)
 os.chdir(working_dir)
@@ -26,6 +32,41 @@ with open(join(comp_lyrics_dir, "raw-lyric-dirs.json")) as f:
             lines = f2.readlines()
 
             raw_lyrics[k] = [line.rstrip('\n') for line in lines if (not line.startswith('[') and line != '\n')]
+
+def areCloseEnough(s1, s2):
+    return levenshtein_distance(s1, s2) / min(len(s1), len(s2)) < 0.1
+
+def isAcceptableGuess(guess, lines):
+    if guess not in lines[:-1]:
+        return False
+    possibleContinuations = []
+    for index, line in enumerate(lines[:-1]):
+        if areCloseEnough(line, guess):
+            possibleContinuations.append(lines[index+1])
+    for c1 in possibleContinuations:
+        for c2 in possibleContinuations:
+            if not areCloseEnough(c1, c2):
+                return False
+    return True
+def pickAcceptableGuess():
+    randomSong = random.choice(list(raw_lyrics.keys()))
+    randomLine = random.choice(raw_lyrics[randomSong][:-1])
+    while not isAcceptableGuess(randomLine, raw_lyrics[randomSong]):
+        randomLine = random.choice(raw_lyrics[randomSong][:-1])
+    answer = raw_lyrics[randomSong][raw_lyrics[randomSong].index(randomLine) + 1]
+    return randomSong, randomLine, answer
+
+def pickDistractors(correctAnswer):
+    NUM_DISTRACTORS = 16
+    distractors = []
+    for _ in range(NUM_DISTRACTORS):
+        randomSong = random.choice(list(raw_lyrics.keys()))
+        randomLine = random.choice(raw_lyrics[randomSong][:-1])
+        while areCloseEnough(randomLine, correctAnswer):
+            randomLine = random.choice(raw_lyrics[randomSong][:-1])
+        distractors.append(randomLine)
+
+    return distractors
 
 def lev_dist_case_i(str1, str2):
     s1 = str1.lower()
@@ -97,30 +138,89 @@ def compare(userGuess, answer):
             else:
                 print(f"\033[1;31m{char}\033[1;00m", end= "")
     
-    print("   Your answer: ", end = "")
+    print("   \033[1;34mYour answer:\033[1;00m ", end = "")
     printWithFlags(truncatedUserGuess, userGuessFlags)
     print(f"\033[1;33m{choppedOffPartOfGuess}\033[1;00m")
 
-    print("Correct answer: ", end = "")
+    print("\033[1;34mCorrect answer:\033[1;00m ", end = "")
     printWithFlags(truncatedAnswer, answerFlags)
     print(f"\033[1;33m{choppedOffPartOfAnswer}\033[1;00m")
 
 
     return minimalDist
 
+def takeUserMultipleChoiceGuess(answer, choices):
+    
+    for i, choice in enumerate(choices):
+        print(f"\033[1;34m{i+1})\033[1;00m {choice}")
+    acceptableInputs = [str(i+1) for i in range(len(choices))]
+    guess = ""
+    while True:
+        guess = input(">>> ")
+        if guess in acceptableInputs:
+            break
+        print("That's not a valid choice.")
+    return choices[int(guess)-1] == answer
 
+def printSong(song, lineToHighlight):
+    album, _, name = song.partition("--")
+    album = " ".join([word.capitalize() for word in album.split("-")])
+    if name.endswith("-tv"):
+        name = name[:-3]
+    if name.endswith("-tv-ftv"):
+        name = name[:-6]
+    name = " ".join([word.capitalize() for word in name.split("-")])
+    print(f"\033[1;32m{album} : {name}\033[1;00m")
 
-randomSong = random.choice(list(raw_lyrics.keys()))
-randomLine = random.choice(raw_lyrics[randomSong][:-1])
-print(f"What line follows: {randomLine}")
-answer = raw_lyrics[randomSong][raw_lyrics[randomSong].index(randomLine) + 1]
-guess = input(">>> ")
-dist = compare(guess, answer)
-while dist < 0:
-    print(f"Try guessing again: your guess was shorter than the programmed answer")
-    guess = input(">>> ")
-    dist = compare(guess, answer)
-print(f"The dist was {dist}")
+    with open(join(comp_lyrics_dir, "raw-lyric-dirs.json")) as f1:
+        d = json.loads(f1.read())
+        with open(d[song]) as f2:
+            for line in f2.readlines():
+                l = line.rstrip("\n")
+                if l == lineToHighlight:
+                    print(f"\033[1;32m{l}\033[1;00m")
+                else:
+                    print(l)
 
-print('done')
+printIntroduction()
+score = 0
+while True:
+    randomSong, randomLine, answer = pickAcceptableGuess()
+    print(f"What line follows: \033[1;34m{randomLine}\033[1;00m")
+    while True:
+        guess = input(">>> ")
+        dist = 0
+        if guess == "?":
+            distractors = pickDistractors(answer)
+            distractors.append(answer)
+            random.shuffle(distractors)
+            print("Reducing to a multiple choice challenge:")
+            res = takeUserMultipleChoiceGuess(answer, distractors)
+            if res:
+                dist = MAX_ACCEPTABLE_DIST
+            else: 
+                dist = MAX_ACCEPTABLE_DIST+1
+        else:
+            dist = compare(guess, answer)
+        if dist < 0:
+            print(f"Try guessing again: your guess was shorter than the programmed answer")
+        else:
+            break
+    if dist > MAX_ACCEPTABLE_DIST:
+        print(f"That wasn't it! The game ends, and your final score is {score}. Good game!")
+        response = input(f"Press enter to quit ('?' to show song):")
+        if response == "?":
+            printSong(randomSong, randomLine)
+            input("Press enter to quit:")
+        sys.exit()
+    if dist != 0:
+        print(f"Correct! You scored {MAX_ACCEPTABLE_DIST - dist + 1} points for your answer.")
+        score += MAX_ACCEPTABLE_DIST - dist + 1
+    else:
+        print(f"Yes! You scored {POINTS_FOR_PERFECT_MATCH} points for your \033[1;32mperfect match\033[1;00m!")
+        score += POINTS_FOR_PERFECT_MATCH
+    response = input(f"Press enter to continue ('?' to show song):")
+    if response == '?':
+        printSong(randomSong, randomLine)
+        input("Press enter to continue:")
 
