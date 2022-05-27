@@ -5,7 +5,7 @@ block_cipher = None
 
 
 a = Analysis(
-    ['game.py'],
+    ['line-guess-game.py'],
     pathex=[],
     binaries=[],
     datas=[

@@ -15,7 +15,18 @@ else:
     print('running in a normal Python process')
 
 def printIntroduction():
-    print("TODO: write intro here")
+    print("""\033[1;34mWelcome to a Taylor Swift lyric guessing game!\033[1;00m
+    
+In this game, you will be shown a line from a Taylor Swift song. You will then be prompted to enter the following line. If your guess is close enough to the correct answer, you will score a certain number of points (and you earn a bonus if your guess is a perfect match).
+
+If you do not know what the next line is, simply enter a question mark ('?') and you will be given 17 choices for the next line. Upon seeing the choices, enter a number 1-17, and you will score only 1 point for the correct answer.
+
+After each round, press the enter key to continue, or enter '?' to view the full lyrics of the song.
+
+The game ends as soon as you submit an incorrect answer.
+
+Good luck! And have fun!""")
+    input("Press enter to begin.")
 
 MAX_ACCEPTABLE_DIST = 13
 POINTS_FOR_PERFECT_MATCH = 26
@@ -202,7 +213,7 @@ while True:
                 dist = MAX_ACCEPTABLE_DIST+1
         else:
             dist = compare(guess, answer)
-        if dist < 0:
+        if guess != '?' and len(guess) + 5 < len(answer):
             print(f"Try guessing again: your guess was shorter than the programmed answer")
         else:
             break
