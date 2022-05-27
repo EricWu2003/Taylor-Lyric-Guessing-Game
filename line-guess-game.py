@@ -186,7 +186,7 @@ printIntroduction()
 score = 0
 while True:
     randomSong, randomLine, answer = pickAcceptableGuess()
-    print(f"What line follows: \033[1;34m{randomLine}\033[1;00m")
+    print(f"Your current score is {score}. What line follows: \033[1;34m{randomLine}\033[1;00m")
     while True:
         guess = input(">>> ")
         dist = 0
