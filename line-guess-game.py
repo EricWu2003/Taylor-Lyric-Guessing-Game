@@ -115,6 +115,8 @@ differ = difflib.Differ()
 def compare(userGuess, answer):
     # returns a dist of -k if the program should prompt the user for more words
     # where k represents how many more characters the user might want to input
+    if guess != '?' and len(guess) + 5 < len(answer):
+        return
 
     truncateAmount, minimalDist = optimalTruncatedDist(userGuess.lower(), answer.lower())
     
